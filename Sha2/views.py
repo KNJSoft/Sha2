@@ -1,5 +1,8 @@
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
+from django.core.checks import messages
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import hashlib
 from django.conf import settings
 from Sha2.models import Fichier
@@ -58,53 +61,56 @@ def send_file(request):
 
     return render(request,'Sha2/upload.html')
 def index(request):
-    if request.method == "POST":
-        file = request.FILES['pdf']
-        nom=str(file).split(".")[0]
-        # hash = calculate_sha256(file)
-        fichier=Fichier(nom=nom,path=file,hash='')
-        with tempfile.TemporaryFile() as temp_file:
-            for chunk in file.chunks():
-                temp_file.write(chunk)
-            temp_file.seek(0)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            file = request.FILES['pdf']
+            nom=str(file).split(".")[0]
+            # hash = calculate_sha256(file)
+            fichier=Fichier(nom=nom,path=file,hash='')
+            with tempfile.TemporaryFile() as temp_file:
+                for chunk in file.chunks():
+                    temp_file.write(chunk)
+                temp_file.seek(0)
 
-            fichier = Fichier(nom=nom, hash='')
+                fichier = Fichier(nom=nom, hash='')
 
-            fichier.path.save(file.name, temp_file)
-            fichier.save()
+                fichier.path.save(file.name, temp_file)
+                fichier.save()
 
-            file_path = fichier.path.path
-            hash_value = calculate_sha256(file_path)
-            fichier.hash = hash_value
-            fichier.save()
-            fichier.save()
+                file_path = fichier.path.path
+                hash_value = calculate_sha256(file_path)
+                fichier.hash = hash_value
+                fichier.save()
+                fichier.save()
 
-        """path = f"{settings.MEDIA_ROOT}/fichiers/{fichier.path}"
-        # path=fichier.path
-        hash = calculate_sha256(path)
-        fichier.hash=hash
-        fichier.save()"""
-    fichiers=Fichier.objects.all()
-    liste=[]
-    for files in fichiers:
-        with open(files.path.path, 'rb') as file:
-            sha256_hash = hashlib.sha256()
-            for chunk in iter(lambda: file.read(4096), b""):
-                sha256_hash.update(chunk)
+            """path = f"{settings.MEDIA_ROOT}/fichiers/{fichier.path}"
+            # path=fichier.path
+            hash = calculate_sha256(path)
+            fichier.hash=hash
+            fichier.save()"""
+        fichiers=Fichier.objects.all()
+        liste=[]
+        for files in fichiers:
+            with open(files.path.path, 'rb') as file:
+                sha256_hash = hashlib.sha256()
+                for chunk in iter(lambda: file.read(4096), b""):
+                    sha256_hash.update(chunk)
 
-            hash_value = sha256_hash.hexdigest()
-            liste.append(hash_value)
+                hash_value = sha256_hash.hexdigest()
+                liste.append(hash_value)
 
-    i=0
-    for fil in fichiers:
-        setattr(fil, 'test', liste[i])
-        i+=1
+        i=0
+        for fil in fichiers:
+            setattr(fil, 'test', liste[i])
+            i+=1
 
-    context={
-        "file":fichiers,
+        context={
+            "file":fichiers,
 
-    }
-    return render(request,'Sha2/index.html',context)
+        }
+        return render(request,'Sha2/index.html',context)
+    else:
+        return redirect('signin')
 def signup(request):
     context = {
 
@@ -112,8 +118,28 @@ def signup(request):
     return render(request, 'Sha2/signup.html', context)
 
 def signin(request):
-    context = {
+    if request.user.is_authenticated:
+        return render(request,'Sha2/index.html')
+    else:
+        if request.method == "POST":
+            username=request.POST['username']
+            pwd = request.POST['pwd']
+            if User.objects.filter(username=username):
 
-    }
-    return render(request, 'Sha2/signin.html', context)
+                user = authenticate(username=username, password=pwd)
+                my_user = User.objects.get(username=username)
+                if user is not None:
+                    login(request, user)
+                    firstname = user.first_name
+                    return redirect('index')
+
+
+                else:
+                    messages.add_message(request, messages.ERROR, "L'authentification à échouer")
+                    return render(request, "Sha2/signin.html", {"error": messages.get_messages(request)})
+            else:
+                messages.add_message(request, messages.ERROR, "Erreur inconnue!!!")
+                return render(request, "Sha2/signin.html", {"error": messages.get_messages(request)})
+
+        return render(request, 'Sha2/signin.html')
 

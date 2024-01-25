@@ -17,7 +17,7 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.112.5">
-    <title>S K A B</title>
+    <title>SR3A-SHA2</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
      integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 
@@ -79,7 +79,7 @@
 
   <nav class="navbar navbar-expand-sm navbar-dark bg-dark" aria-label="Third navbar example">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">SR3A-SHA2</a>
+      <a class="navbar-brand" href="{% url 'index' %}">SR3A-SHA2</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample03" aria-controls="navbarsExample03" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -109,19 +109,20 @@
 </main>
 
   <main>
+    <h4 class="h3 mb-3 fw-normal">Bonjour, {{ request.user.last_name }} {{ request.user.first_name }}</h4>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <h1 class="h3 mb-3 fw-normal">Upload un fichier</h1>
 
 
     <div class="form-group">
-      <label for="htmlFile">Sélectionner un fichier pdf</label>
+      <label for="htmlFile">Sélectionner un fichier </label>
         <input type="file" class="form-control-file" name="pdf" id="htmlFile">
     </div>
 
 
 
-    <button class="btn btn-primary w-100 py-2 mt-2 mb-2" type="submit">Envoyer</button>
+    <button class="btn btn-primary w-100 py-2 mt-4 mb-4" type="submit">Envoyer</button>
   </form>
   </main>
 
@@ -129,7 +130,7 @@
 
 
 
-</div>
+
 
 
     <!--footer-->
@@ -139,7 +140,7 @@
       <div class="col-6 col-md-2 mb-3">
         <h5>A Propos</h5>
         <ul class="nav flex-column">
-          <li class="nav-item mb-2"><a href="#" class="nav-link p-0">Conditions de ventes</a></li>
+          <li class="nav-item mb-2"><a href="#" class="nav-link p-0">Conditions de chiffrement</a></li>
           <li class="nav-item mb-2"><a href="#" class="nav-link p-0 ">info</a></li>
           <li class="nav-item mb-2"><a href="#" class="nav-link p-0">info</a></li>
           <li class="nav-item mb-2"><a href="#" class="nav-link p-0 ">info</a></li>
