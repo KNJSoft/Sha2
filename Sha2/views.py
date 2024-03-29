@@ -7,6 +7,11 @@ import hashlib
 from django.conf import settings
 from Sha2.models import Fichier
 import tempfile
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import authentication, generics,mixins,permissions
+from .serializer import *
+from .permission import IsStaffPermission
 """
 
 import hashlib
@@ -37,6 +42,37 @@ def calculate_sha256(file_path):
         for chunk in iter(lambda: file.read(4096), b""):
             sha256_hash.update(chunk)
     return sha256_hash.hexdigest()
+
+
+class CreateFile(generics.CreateAPIView):
+    permission_classes = [IsStaffPermission]
+    queryset = Fichier.objects.all()
+    serializer_class = FichierSerializers
+
+    def perform_create(self, serializer):
+        file=serializer.validated_data.get('path')
+        print(file)
+    #     # file = request.FILES['pdf']
+        nom = str(file).split(".")[0]
+    #     # hash = calculate_sha256(file)
+        serializer.save(nom=nom, path=file, hash='')
+    #
+        fichier = serializer.save(nom=nom, path=file, hash='')
+        with tempfile.TemporaryFile() as temp_file:
+            for chunk in file.chunks():
+                temp_file.write(chunk)
+            temp_file.seek(0)
+
+            # fichier = Fichier(nom=nom, hash='')
+            serializer.save(nom=nom,hash='')
+            # serializer.save(file.name, temp_file,)
+            fichier.path.save(file.name, temp_file)
+            fichier.save()
+    #
+            file_path = fichier.path.path
+            hash_value = calculate_sha256(file_path)
+            serializer.save(hash=hash_value,nom=nom,user=self.request.user)
+
 def send_file(request):
     if request.method == "POST":
         file = request.FILES['pdf']
@@ -60,6 +96,12 @@ def send_file(request):
             fichier.save()
 
     return render(request,'Sha2/upload.html')
+
+class ListFile(generics.ListAPIView):
+    permission_classes = [IsStaffPermission]
+    queryset = Fichier.objects.all()
+    serializer_class = FichierGetSerializers
+
 def index(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -143,3 +185,8 @@ def signin(request):
 
         return render(request, 'Sha2/signin.html')
 
+# ---------------------user-----------------------------
+class AddUser(generics.CreateAPIView):
+    # permission_classes = [IsStaffPermission]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

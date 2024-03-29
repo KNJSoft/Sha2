@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import *
 # Register your models here.
 class FichierAdmin(admin.ModelAdmin):
-    list_display = ('nom','path','hash')
+    list_display = ('nom','path','user','date_creation')
     search_fields = ['nom',]
 
 class MessageAdmin(admin.ModelAdmin):
